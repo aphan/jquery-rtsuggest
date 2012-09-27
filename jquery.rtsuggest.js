@@ -41,6 +41,21 @@
   // Creates dropdown suggestions box for a form and searches for autocompletions
   // when form's input changes.
   var Suggest = function ( inputForm, suggestSource, settings, cssClasses ) {
+    
+    // We check the cache before actually querying the server
+    var suggestionsCache = {};
+    // The currently highlighted suggestion from the dropdown box
+    var highlightedSuggestion = [];
+    // The text that the user actually types in the input form.  NOT the same as
+    // suggestionInput below, which is the text that they could've selected using the
+    // arrow keys from the dropdown box.
+    var userInput = '';
+    var suggestionInput = '';
+    var useUserInput = true;
+    
+    var dropdownBox = $( '<div />' ).mouseout( function() {
+      highlightedSuggestion = [];  
+    }).addClass( cssClasses.dropdownBox ).appendTo( 'body' ).hide();
 
   };
 
