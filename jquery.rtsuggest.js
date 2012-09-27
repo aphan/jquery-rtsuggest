@@ -88,14 +88,149 @@
       dropdownBox.hide();
       dropdownBox.html( '' );
     } 
+    
+    // Some action needs to be performed when the user modifies the input of the form 
+    $( inputForm ).keyup( function( event ) {
+      switch( event.keyCode ) {
+        case 38: // up key
+        case 40: // down key
+        // Remove whatever dropdown item is highlighted (if any)
+          if ( !useUserInput && highlightedSuggestion.length != 0 ) {
+            removeHighlight( highlightedSuggestion );
+          }
+          var toHighlight = null;
+          // Highlight the first dropdown item if the user presses the down key and no
+          // item was highlighted before
+          if ( event.keyCode == 40 && (useUserInput || highlightedSuggestion.length == 0) ) {
+            useUserInput = false;
+            toHighlight = $( '.' + cssClasses.suggestionsList + ' li' ).first();
+          } else if ( event.keyCode == 40 ) {
+            toHighlight = highlightedSuggestion.next();
+            // Highlight the last item if the user presses the up key and no item
+            // was highlighted before
+          } else if ( event.keyCode == 38 && useUserInput ) {
+            useUserInput = false;
+            toHighlight = $( '.' + cssClasses.suggestionsList + ' li' ).last();
+          } else {
+            toHighlight = highlightedSuggestion.prev();
+          }
 
+          highlightSuggestion( toHighlight );
+          // Change the text in the input form to either be the highlighted item, or
+          // whatever the user typed, depending on whether there is anything highlighted
+          if ( useUserInput ) {
+            $( inputForm ).val( userInput );
+          } else {
+            $( inputForm ).val( suggestionInput );
+          }
+          break;
+
+        case 13: // enter key
+          $( inputForm ).val( suggestionInput );
+          hideDropdownBox();
+          break;
+
+        default:
+          if ( String.fromCharCode( event.keyCode ) ) {
+          // Don't do anything on a blank input
+            if ( !$(inputForm).val() ) {
+              hideDropdownBox();
+              break;
+            }
+            var query = $( inputForm ).val();
+            var normalizedQuery = $.trim(query).split(new RegExp("\\s+")).join(' ');
+            getSuggestions( normalizedQuery );
+            userInput = query;
+            useUserInput = true;
+            highlightedSuggestion = [];
+          }
+      }
+
+    }).click( function( event ) {
+      event.stopPropagation();
+      if ( $( inputForm ).val() == '') {
+        getSuggestions( '' );
+      } else  {
+        var query = $( inputForm ).val();
+        getSuggestions( query );
+      }
+    });
+
+    function highlightSuggestion( suggestion ) {
+      useUserInput = ( suggestion.length == 0 );
+      suggestion.addClass( cssClasses.highlightedSuggestion );
+      highlightedSuggestion = suggestion;
+      suggestionInput = suggestion.text();
+    }
+
+    function removeHighlight( suggestion ) {
+      suggestion.removeClass( cssClasses.highlightedSuggestion );
+    }
+
+    
+    function getSuggestions( query ) {
+      // only make server call if cached query doesn't exist
+      if ( suggestionsCache[query] != null ) {
+        formatDropdownBox( suggestionsCache[query] );
+      } else {
+        serverQuery( query );
+      }
+    }
+    
+    function serverQuery( query ) {
+      var queryUrl = suggestSource + query;
+      // If there is a specified URL to get top items (for when the
+      // user clicks onto a blank form), set the query url to that link
+      if (!query && settings.topItemsUrl) {
+        queryUrl = settings.topItemsUrl;
+      } else if ( !query || !(/\S/.test(query)) ) {
+        return;
+      }
+      $.ajax( {
+        url: queryUrl,
+        type: settings.requestType,
+        dataType: settings.dataType,
+        success: function( data ) {
+          formatDropdownBox( data );
+          // cache the results
+          suggestionsCache[query] = data;
+        }
+      });
+    }
+    
+    function formatDropdownBox( data ) {
+      var suggestionsList = $( '<ul />' ).addClass( cssClasses.suggestionsList )
+      // selects the nearest dropdown item when the user mouses over the dropdown
+      .mouseover( function ( event ) {
+        var selectedSuggestion = $( event.target ).closest( 'li' );
+        highlightSuggestion( selectedSuggestion );
+
+      }).mouseout( function() {
+        removeHighlight( highlightedSuggestion );
+
+      // set the input form's text to be the text of the dropdown item that
+      // the user clicks on
+      }).click( function ( event ) {
+        event.stopPropagation();
+        var selectedSuggestion = $( event.target ).closest( 'li' );
+        $( inputForm ).val( selectedSuggestion.text() );
+        userInput = selectedSuggestion.text();
+        useUserInput = true;
+        hideDropdownBox();
+      });
+
+      $.each(data, function( i, item ) {
+        suggestionsList.append( '<li class="' + cssClasses.suggestionItem 
+        + '"><span class="' + cssClasses.suggestionText + '">' + item + '</span></li>' );
+      });
+      // Only show the dropdown box if there are suggestions available
+      if ( data.length == 0 ) { 
+        hideDropdownBox();
+      } else {
+        dropdownBox.html( suggestionsList );
+        showSuggestions();
+      }
+    }
 
   };
-
 } ( jQuery ));
-
-
-
-
-
-
