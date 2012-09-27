@@ -41,7 +41,7 @@
   // Creates dropdown suggestions box for a form and searches for autocompletions
   // when form's input changes.
   var Suggest = function ( inputForm, suggestSource, settings, cssClasses ) {
-    
+
     // We check the cache before actually querying the server
     var suggestionsCache = {};
     // The currently highlighted suggestion from the dropdown box
@@ -52,10 +52,29 @@
     var userInput = '';
     var suggestionInput = '';
     var useUserInput = true;
-    
+
     var dropdownBox = $( '<div />' ).mouseout( function() {
       highlightedSuggestion = [];  
     }).addClass( cssClasses.dropdownBox ).appendTo( 'body' ).hide();
+
+    // The dropdown box should change its size accordingly with the position and
+    // size of the input form
+    $( window ).resize( function() {
+      if ( $( dropdownBox ).is( ':visible' ) ) {
+        positionDropdownBox();
+      }
+    });
+    
+    function positionDropdownBox() {
+      $( dropdownBox ).css({
+        position: "absolute",
+        top: $( inputForm ).offset().top + $( inputForm ).outerHeight() - 1.5,
+        left: $(  inputForm ).offset().left,
+        width: $( inputForm ).outerWidth() - 1,
+        'z-index': 40,
+        'font-size': $('#' + inputForm.id).css('font-size')
+      });
+    }
 
   };
 
