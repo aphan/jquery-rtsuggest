@@ -1,6 +1,6 @@
 # Redis::Autosuggest
 
-Provides suggestions for form input either through client-side or server-side autocompletions.
+Dropdown suggestions for form input either through client-side or server-side autocompletions.
 
 ## Usage
 
