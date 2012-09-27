@@ -1,4 +1,4 @@
-( function ( $ ) {
+(function ( $ ) {
 
   var methods = {
 
@@ -20,7 +20,7 @@
         };
 
         $( this ).data( 'rtsuggestSettings', settings );
-        $( this ).data( 'rtsuggestCssClasses', cssClasses);
+        $( this ).data( 'rtsuggestCssClasses', cssClasses );
         $( this ).data( 'rtsuggestObject', new Suggest(this, suggestSource, settings, cssClasses) );
       });
     }
@@ -106,7 +106,7 @@
               break;
             }
             var query = $( inputForm ).val();
-            var normalizedQuery = $.trim(query).split(new RegExp("\\s+")).join(' ');
+            var normalizedQuery = $.trim( query ).split( new RegExp("\\s+") ).join(' ');
             getSuggestions( normalizedQuery );
             userInput = query;
             useUserInput = true;
@@ -149,7 +149,7 @@
       var queryUrl = suggestSource + query;
       // If there is a specified URL to get top items (for when the
         // user clicks onto a blank form), set the query url to that link
-        if (!query && settings.topItemsUrl) {
+        if ( !query && settings.topItemsUrl ) {
           queryUrl = settings.topItemsUrl;
         } else if ( !query || !(/\S/.test(query)) ) {
           return;
@@ -215,7 +215,7 @@
     // The dropdown box should change its size accordingly with the position and
     // size of the input form
     $( window ).resize( function() {
-      if ( $( dropdownBox ).is( ':visible' ) ) {
+      if ( $(dropdownBox).is(':visible') ) {
         positionDropdownBox();
       }
     });
