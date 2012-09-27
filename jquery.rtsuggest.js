@@ -2,17 +2,25 @@
 
   var methods = {
 
+    // suggestSource could be:
+    // -- A string representing a url (eg "/calling/server?query=") that is a server call 
+    // that we can dynamically query whenever the user changes the input form
+    // -- A string representing a url (eg "/calling/server/once?query=alltitles") that we just 
+    // query once to get a collection of strings to search against for all future input changes.
+    // Needs to set callServerOnInputChange to false in this case.
+    // -- An array of strings, eg ["item1", "item2", "item3"]
     init : function( suggestSource, options ) { 
       return this.each( function () {
 
         var settings = $.extend( {
+          callServerOnInputChange = true,
           requestType: 'GET',
           dataType: 'json',
           topItemsUrl: ''
         }, options );
 
         var cssClasses = {
-          dropdownBox: 'dropdown-box',
+          dropdownBox: 'dropdown-box', // Div around suggestionsList
           suggestionsList: 'suggestions-list',
           highlightedSuggestion: 'highlighted-suggestion',
           suggestionItem: 'suggestion-item',
@@ -57,9 +65,23 @@
       highlightedSuggestion = [];  
     }).addClass( cssClasses.dropdownBox ).appendTo( 'body' ).hide();
 
+    // Disable default autocompletion on the input form
+    $(inputForm).attr( 'autocomplete', 'off' );
+
     // Perform an action when the user modifies the input of the form 
     $( inputForm ).keyup( function( event ) {
       switch( event.keyCode ) {
+        case 13: // enter key
+          $( inputForm ).val( suggestionInput );
+          hideDropdownBox();
+          break;
+
+        case 27: // escape key
+          useUserInput = true;
+          userInput = $( inputForm ).val();
+          hideDropdownBox();
+          break;
+
         case 38: // up key
         case 40: // down key
           // Remove whatever dropdown item is highlighted (if any)
@@ -93,11 +115,6 @@
           }
           break;
 
-        case 13: // enter key
-          $( inputForm ).val( suggestionInput );
-          hideDropdownBox();
-          break;
-
         default:
           if ( String.fromCharCode( event.keyCode ) ) {
             // Don't do anything on a blank input
@@ -106,8 +123,7 @@
               break;
             }
             var query = $( inputForm ).val();
-            var normalizedQuery = $.trim( query ).split( new RegExp("\\s+") ).join(' ');
-            getSuggestions( normalizedQuery );
+            getSuggestions( normalizeString(query) );
             userInput = query;
             useUserInput = true;
             highlightedSuggestion = [];
@@ -116,13 +132,18 @@
 
     }).click( function( event ) {
       event.stopPropagation();
-      if ( $( inputForm ).val() == '') {
+      if ( $(inputForm).val() == '' && settings.topItemsUrl ) {
         getSuggestions( '' );
-      } else  {
+      } else if ( $(inputForm).val() ) {
         var query = $( inputForm ).val();
-        getSuggestions( query );
+        getSuggestions( normalizeString(query) );
       }
     });
+
+    // Removes all extra whitespace
+    function normalizeString( string ) {
+      return $.trim( string ).split( new RegExp('\\s+') ).join( ' ' );
+    }
 
     function highlightSuggestion( suggestion ) {
       useUserInput = ( suggestion.length == 0 );
@@ -135,23 +156,35 @@
       suggestion.removeClass( cssClasses.highlightedSuggestion );
     }
 
-
     function getSuggestions( query ) {
-      // only make server call if cached query doesn't exist
-      if ( suggestionsCache[query] != null ) {
+      if ( suggestSource instanceof Array ) {
+        arrayQuery( query );
+        // only make server call if cached query doesn't exist
+      } else if ( suggestionsCache[query] != null ) {
         formatDropdownBox( suggestionsCache[query] );
       } else {
         serverQuery( query );
       }
     }
 
+    function arrayQuery( query ) {
+      matchingItems = [];
+      var queryRegex = new RegExp( '^' + query );
+      $.each( suggestSource, function(i, item ) {
+        if ( queryRegex.test( item ) ) {
+          matchingItems.push( item );
+        }
+      });
+      formatDropdownBox( matchingItems );
+    }
+
     function serverQuery( query ) {
       var queryUrl = suggestSource + query;
       // If there is a specified URL to get top items (for when the
         // user clicks onto a blank form), set the query url to that link
-        if ( !query && settings.topItemsUrl ) {
+        if ( !query ) {
           queryUrl = settings.topItemsUrl;
-        } else if ( !query || !(/\S/.test(query)) ) {
+        } else if ( !(/\S/.test(query)) ) {
           return;
         }
         $.ajax( {
