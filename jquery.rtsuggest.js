@@ -73,8 +73,22 @@
         width: $( inputForm ).outerWidth() - 1,
         'z-index': 40,
         'font-size': $('#' + inputForm.id).css('font-size')
-      });
+    });
     }
+    
+    // Hide the dropdown when the dropdown is visible and the user clicks anywhere 
+    // besides from the dropdown box or the input form, hide 
+    $( document ).click( function() {
+      useUserInput = true;
+      userInput = $( inputForm ).val();
+      hideDropdownBox();
+    });
+
+    function hideDropdownBox() {
+      dropdownBox.hide();
+      dropdownBox.html( '' );
+    } 
+
 
   };
 
