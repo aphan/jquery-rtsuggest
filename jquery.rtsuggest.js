@@ -1,3 +1,7 @@
+/*
+ * jQuery-rtsuggest - v0.5.0
+ */
+
 (function ( $ ) {
 
   var methods = {
