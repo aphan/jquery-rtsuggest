@@ -1,5 +1,5 @@
 /*
- * jQuery-rtsuggest - v0.5.0
+ * jQuery-rtsuggest - v0.5.1
  */
 
 (function ( $ ) {
@@ -171,7 +171,7 @@
     }
 
     function arrayQuery( query ) {
-      matchingItems = [];
+      var matchingItems = [];
       var queryRegex = new RegExp( '^' + query );
       $.each( suggestSource, function(i, item ) {
         if ( queryRegex.test( item ) ) {
@@ -184,7 +184,7 @@
     function serverQuery( query ) {
       var queryUrl = suggestSource;
       if ( settings.callServerOnInputChange ) {
-        var queryUrl = suggestSource + query;
+        queryUrl = suggestSource + query;
       }
       // If there is a specified URL to get top items (for when the
         // user clicks onto a blank form), set the query url to that link
