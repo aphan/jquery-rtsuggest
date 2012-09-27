@@ -1,4 +1,4 @@
-# Redis::Autosuggest
+# jQuery-rtsuggest 
 
 Dropdown suggestions for form input either through client-side or server-side autocompletions.
 
@@ -13,15 +13,17 @@ Link to scripts/styles:
 
 Then pass rtsuggest a string array:
 ```js
- $('#my-input-form').rtsuggest( ['string1', 'string2', string3'] );
+ $('#my-input-form').rtsuggest( ['string1', 'string2', 'string3'] );
 ```
 
 Or a server-side script to call once (by default response should be a JSON array of strings)
 ```js
- $('#my-input-form').rtsuggest( '/calling/server/once?query=alltitles', { callServerOnInputChange: false } );
+ $('#my-input-form').rtsuggest( '/calling/server/once?query=alltitles', 
+                                { callServerOnInputChange: false } );
 ```
 
 Or a server-side script to call everytime the user types something different (server-side autocompleton)
 ```js
- $('#my-input-form').rtsuggest( '/calling/server/on/input/change?query=', { callServerOnInputChange: true } );
+ $('#my-input-form').rtsuggest( '/calling/server/on/input/change?query=', 
+                                { callServerOnInputChange: true } );
 ```
