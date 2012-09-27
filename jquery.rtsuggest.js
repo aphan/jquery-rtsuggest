@@ -13,7 +13,7 @@
       return this.each( function () {
 
         var settings = $.extend( {
-          callServerOnInputChange = true,
+          callServerOnInputChange: false,
           requestType: 'GET',
           dataType: 'json',
           topItemsUrl: ''
@@ -32,7 +32,6 @@
         $( this ).data( 'rtsuggestObject', new Suggest(this, suggestSource, settings, cssClasses) );
       });
     }
-
   };
 
   $.fn.rtsuggest = function( method ) {
@@ -179,7 +178,10 @@
     }
 
     function serverQuery( query ) {
-      var queryUrl = suggestSource + query;
+      var queryUrl = suggestSource;
+      if ( settings.callServerOnInputChange ) {
+        var queryUrl = suggestSource + query;
+      }
       // If there is a specified URL to get top items (for when the
         // user clicks onto a blank form), set the query url to that link
         if ( !query ) {
@@ -187,14 +189,19 @@
         } else if ( !(/\S/.test(query)) ) {
           return;
         }
+
         $.ajax( {
           url: queryUrl,
           type: settings.requestType,
           dataType: settings.dataType,
           success: function( data ) {
-            formatDropdownBox( data );
-            // cache the results
-            suggestionsCache[query] = data;
+            if ( settings.callServerOnInputChange ) {
+              formatDropdownBox( data );
+              suggestionsCache[query] = data; // cache results
+            } else {
+              suggestSource = data; 
+              arrayQuery( query );
+            }
           }
         });
     }
@@ -243,7 +250,6 @@
       dropdownBox.hide();
       dropdownBox.html( '' );
     } 
-
 
     // The dropdown box should change its size accordingly with the position and
     // size of the input form
