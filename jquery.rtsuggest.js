@@ -1,5 +1,5 @@
 /*
- * jQuery-rtsuggest - v0.5.1
+ * jQuery-rtsuggest - v0.6.0
  */
 
 (function ( $ ) {
@@ -20,7 +20,9 @@
           callServerOnInputChange: false,
           requestType: 'GET',
           dataType: 'json',
-          topItemsUrl: ''
+          topItemsUrl: '',
+          boldSuggestionItem: false
+          
         }, options );
 
         var cssClasses = {
@@ -164,7 +166,7 @@
         arrayQuery( query );
         // only make server call if cached query doesn't exist
       } else if ( suggestionsCache[query] != null ) {
-        formatDropdownBox( suggestionsCache[query] );
+        formatDropdownBox( suggestionsCache[query], query );
       } else {
         serverQuery( query );
       }
@@ -178,7 +180,7 @@
           matchingItems.push( item );
         }
       });
-      formatDropdownBox( matchingItems );
+      formatDropdownBox( matchingItems, query );
     }
 
     function serverQuery( query ) {
@@ -200,7 +202,7 @@
           dataType: settings.dataType,
           success: function( data ) {
             if ( settings.callServerOnInputChange ) {
-              formatDropdownBox( data );
+              formatDropdownBox( data, query );
               suggestionsCache[query] = data; // cache results
             } else {
               suggestSource = data; 
@@ -210,7 +212,7 @@
         });
     }
 
-    function formatDropdownBox( data ) {
+    function formatDropdownBox( data, query ) {
       var suggestionsList = $( '<ul />' ).addClass( cssClasses.suggestionsList )
       // selects the nearest dropdown item when the user mouses over the dropdown
       .mouseover( function ( event ) {
@@ -232,6 +234,7 @@
       });
 
       $.each(data, function( i, item ) {
+        item = formatSuggestionItem(query, item);
         suggestionsList.append( '<li class="' + cssClasses.suggestionItem + '"><span class="' 
         + cssClasses.suggestionText + '">' + item + '</span></li>' );
       });
@@ -281,6 +284,17 @@
       userInput = $( inputForm ).val();
       hideDropdownBox();
     });
+
+    // Bold the portion of the suggestion item that is NOT part of the user's current input.
+    // For now, only works if the user's current input is the starting substring of the
+    // suggestion item's text
+    function formatSuggestionItem( query, item ) {
+      if (settings.boldSuggestionItem) {
+        return query + '<b>' + item.slice(query.length) + '</b>';
+      } else {
+        return item;
+      }
+    }
 
   };
 } ( jQuery ));
