@@ -160,11 +160,13 @@
     function removeHighlight( suggestion ) {
       suggestion.removeClass( cssClasses.highlightedSuggestion );
     }
-
+    
+    // If the data source is an array, search the array for suggestions.
+    // If the query exists in the cache, grab the results from the cache.
+    // Else, call the server script to get suggestions
     function getSuggestions( query ) {
       if ( suggestSource instanceof Array ) {
         arrayQuery( query );
-        // only make server call if cached query doesn't exist
       } else if ( suggestionsCache[query] != null ) {
         formatDropdownBox( suggestionsCache[query], query );
       } else {
@@ -266,6 +268,8 @@
       }
     });
 
+  // Dynamic adjustment of dropdown suggestions box based on the input form that
+  // it's attached to
     function positionDropdownBox() {
       $( dropdownBox ).css({
         position: "absolute",
