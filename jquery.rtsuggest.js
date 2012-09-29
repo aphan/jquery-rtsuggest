@@ -291,9 +291,8 @@
     function formatSuggestionItem( query, item ) {
       if (settings.boldSuggestionItem) {
         return query + '<b>' + item.slice(query.length) + '</b>';
-      } else {
-        return item;
       }
+      return item;
     }
 
   };
