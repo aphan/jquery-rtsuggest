@@ -1,5 +1,5 @@
 /*
- * jQuery-rtsuggest - v0.6.0
+ * jQuery-rtsuggest - v0.6.1
  */
 
 (function ( $ ) {
